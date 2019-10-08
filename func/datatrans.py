@@ -7,6 +7,7 @@ Created on Sun Oct  6 17:28:25 2019
 datatrans.py: get data from web and save to db.
 """
 import MySQLdb
+from func.stockquery import StockQuery
 
 
 class DataTrans( object ):
@@ -28,24 +29,27 @@ class DataTrans( object ):
 
     def trans( self ):
         # 连接db
-        self.connectdb()
+        dbcon = self.connectdb()
+        cursor = dbcon.cursor()
+        #cursor.execute("SELECT VERSION()")
         
         # 获取数据
+        stockquery = StockQuery()
+        stockdata = stockquery.getStockBasicData()
+        print( stockdata )
         
         # 存储数据
         
+        
+        
         # 关闭db
-        pass
+        dbcon.close()
     
     def connectdb( self ):
         dbcon = MySQLdb.connect(host=self.db_host, port=self.db_port, 
                              user=self.db_user, passwd=self.db_passwd, 
-                             db=self.db_name, charset=self.db_charset )
-        cursor = dbcon.cursor()
-        cursor.execute("SELECT VERSION()")
-        data = cursor.fetchone()
-        print("Database version : ", data)
-        dbcon.close()
+                             db=self.db_name, charset=self.db_charset )        
+        return dbcon
     
 
 
