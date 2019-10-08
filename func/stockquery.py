@@ -22,14 +22,14 @@ class StockQuery( object ):
         pro = ts.pro_api( token=TUSHARE_TOKEN )
         # 查询当前所有正常上市交易的股票列表 , symbol, name
         data = pro.query( 'stock_basic', exchange='', list_status='L', 
-                         fields='ts_code')
+                         fields='ts_code,symbol,name,area,industry,list_status,list_date')
         #print( data )
         #print( data.ix[0:3] )
         #print( data.columns )
         #print( data.ix[ 0:3, 1 ] )
         
-        dl = data.ix[ :, 0 ].values
-        return dl
+        #dl = data.ix[ :, 0 ].values
+        return data
         
 
     def getSingleStockData( self, ts_code, length ):
