@@ -30,8 +30,6 @@ class DataTrans( object ):
     def trans( self ):
         # 连接db
         dbcon = self.connectdb()
-        cursor = dbcon.cursor()
-        #cursor.execute("SELECT VERSION()")
         
         print("update stock basicdata begin...")
         # 获取数据
@@ -40,6 +38,24 @@ class DataTrans( object ):
         stockdata = stockquery.getStockBasicData()
         #print( stockdata.ix[0,0] )
         #stockdata.ix[0]
+        #self.updateStockList( dbcon, stockdata )
+        print("update stock basicdata finished.")
+        
+        print("update stock daily data begin...")
+        self.updateStockDailyData( dbcon, stockdata )
+        print("update stock daily data finished.")
+        
+        # 关闭db
+        dbcon.close()
+    
+    def connectdb( self ):
+        dbcon = MySQLdb.connect(host=self.db_host, port=self.db_port, 
+                             user=self.db_user, passwd=self.db_passwd, 
+                             db=self.db_name, charset=self.db_charset )        
+        return dbcon
+    
+    def updateStockList( self, dbcon, stockdata ):
+        cursor = dbcon.cursor()
         icount = len(stockdata.values)
         for i in range(icount):
             ts_code = stockdata.values[i,0]
@@ -84,28 +100,44 @@ class DataTrans( object ):
                         
             except:
                 print( "Error: unable to fecth data" )
+        
+        
+    def updateStockDailyData( self, dbcon, stockdata ):
+        stockquery = StockQuery()
+        # 判断当前是否是交易日，如果是，则抓取更新，否则pass
+        if not stockquery.getTradeCal( '20190901', '20191009' ):
+            print( "today is not trade" )
+            return
+        cursor = dbcon.cursor()
+        icount = len(stockdata.values)
+        for i in range(100,500): #range(icount)
+            ts_code = stockdata.values[i,0]
+            print("save {0}--{1} data".format( i, ts_code ) )
+            df = stockquery.getStockDailyData( ts_code, '20190101', '20191009' )
+            #print( df )
+            ilen = len(df.values)
+            for j in range( ilen ):
+                #print( df.values[ilen-1-j, 0])
+                #print( df.values[ilen-1-j, 1])
+                sql = '''insert into stock_daily (ts_code,trade_date,vopen,
+                       vhigh,vlow,vclose,pre_close,vchange,pct_chg,vol,amount) 
+                      values ('{0}','{1}',{2},{3},{4},{5},{6},{7},{8},{9},{10})
+                      '''.format(ts_code, df.values[ilen-1-j, 1], 
+                      df.values[ilen-1-j, 2], df.values[ilen-1-j, 3],
+                      df.values[ilen-1-j, 4], df.values[ilen-1-j, 5],
+                      df.values[ilen-1-j, 6], df.values[ilen-1-j, 7],
+                      df.values[ilen-1-j, 8], df.values[ilen-1-j, 9],
+                      df.values[ilen-1-j, 10])
+                #print( sql )
+                try:
+                    cursor.execute(sql)
+                    dbcon.commit()
+                except:
+                    print("insert stock_daily error [{0}-{1}]".format(ts_code, df.values[ilen-1-j, 1]))
+                    dbcon.rollback()
             
-            
-        # 存储数据
-        
-        print("update stock basicdata ok")
-        
-        
-        print("update stock detail data begin...")
-        
-        
-        
-        
-        print("update stock detail data ok")
-        
-        # 关闭db
-        dbcon.close()
-    
-    def connectdb( self ):
-        dbcon = MySQLdb.connect(host=self.db_host, port=self.db_port, 
-                             user=self.db_user, passwd=self.db_passwd, 
-                             db=self.db_name, charset=self.db_charset )        
-        return dbcon
-    
+
+
+
 
 
