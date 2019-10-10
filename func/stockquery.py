@@ -56,4 +56,18 @@ class StockQuery( object ):
             return []
         else:
             return dl[0:length]
-        
+
+    def getStockDailyData( self, ts_code, start_date, end_date ):
+        pro = ts.pro_api( token=TUSHARE_TOKEN )
+        df = pro.query( 'daily', ts_code=ts_code, start_date=start_date,
+                       end_date=end_date, fields='ts_code,trade_date,open,\
+                       high,low,close,pre_close,change,pct_chg,vol,amount')
+        #print( df )
+        return df
+
+    def getTradeCal( self, start_date, end_date ):
+        return True
+
+    
+    
+    
