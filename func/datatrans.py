@@ -7,6 +7,7 @@ Created on Sun Oct  6 17:28:25 2019
 datatrans.py: get data from web and save to db.
 """
 import MySQLdb
+import time
 from func.stockquery import StockQuery
 
 
@@ -31,19 +32,23 @@ class DataTrans( object ):
         # 连接db
         dbcon = self.connectdb()
         
-        print("update stock basicdata begin...")
+        print("[{0}]--update stock basicdata begin...".format(time.strftime("%Y-%m-%d %H:%M:%S")))
+        start = time.perf_counter()
         # 获取数据
         stockquery = StockQuery()
         # 获取并更新基础数据
         stockdata = stockquery.getStockBasicData()
         #print( stockdata.ix[0,0] )
         #stockdata.ix[0]
-        #self.updateStockList( dbcon, stockdata )
-        print("update stock basicdata finished.")
+        self.updateStockList( dbcon, stockdata )
+        dur = time.perf_counter() - start
+        print("[{}]--update stock basicdata finished.[{:.2f}s]".format(time.strftime("%Y-%m-%d %H:%M:%S"),dur))
         
-        print("update stock daily data begin...")
+        print("[{}]--update stock daily data begin...".format(time.strftime("%Y-%m-%d %H:%M:%S")))
+        start = time.perf_counter()
         self.updateStockDailyData( dbcon, stockdata )
-        print("update stock daily data finished.")
+        dur = time.perf_counter() - start
+        print("[{}]--update stock daily data finished.[{:.2f}s]".format(time.strftime("%Y-%m-%d %H:%M:%S"),dur))
         
         # 关闭db
         dbcon.close()
@@ -57,6 +62,7 @@ class DataTrans( object ):
     def updateStockList( self, dbcon, stockdata ):
         cursor = dbcon.cursor()
         icount = len(stockdata.values)
+        print( "update stock list - {}".format(icount) )
         for i in range(icount):
             ts_code = stockdata.values[i,0]
             symbol = stockdata.values[i,1]
@@ -110,7 +116,7 @@ class DataTrans( object ):
             return
         cursor = dbcon.cursor()
         icount = len(stockdata.values)
-        for i in range(100,500): #range(icount)
+        for i in range(600,icount): #range(icount)
             ts_code = stockdata.values[i,0]
             print("save {0}--{1} data".format( i, ts_code ) )
             df = stockquery.getStockDailyData( ts_code, '20190101', '20191009' )
