@@ -111,15 +111,17 @@ class DataTrans( object ):
     def updateStockDailyData( self, dbcon, stockdata ):
         stockquery = StockQuery()
         # 判断当前是否是交易日，如果是，则抓取更新，否则pass
-        if not stockquery.getTradeCal( '20190901', '20191009' ):
-            print( "today is not trade" )
-            return
+        #if not stockquery.getTradeCal( '20190901', '20191009' ):
+        #    print( "today is not trade" )
+        #    return
         cursor = dbcon.cursor()
         icount = len(stockdata.values)
-        for i in range(600,icount): #range(icount)
+        for i in range(icount): #range(icount)
             ts_code = stockdata.values[i,0]
             print("save {0}--{1} data".format( i, ts_code ) )
-            df = stockquery.getStockDailyData( ts_code, '20190101', '20191009' )
+            df = stockquery.getStockDailyData( ts_code, '20191029', '20191030' )
+            # 避免tushare接口调用频繁被禁
+            time.sleep( 0.2 )
             #print( df )
             ilen = len(df.values)
             for j in range( ilen ):
