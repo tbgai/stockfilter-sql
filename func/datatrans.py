@@ -8,6 +8,7 @@ datatrans.py: get data from web and save to db.
 """
 import MySQLdb
 import time
+import datetime
 from func.stockquery import StockQuery
 
 
@@ -114,12 +115,16 @@ class DataTrans( object ):
         #if not stockquery.getTradeCal( '20190901', '20191009' ):
         #    print( "today is not trade" )
         #    return
+        today = datetime.date.today()
+        yesterday = today - datetime.timedelta(days=1)
+        start_date = yesterday.strftime("%Y%m%d")
+        end_date = today.strftime("%Y%m%d")
         cursor = dbcon.cursor()
         icount = len(stockdata.values)
         for i in range(icount): #range(icount)
             ts_code = stockdata.values[i,0]
             print("save {0}--{1} data".format( i, ts_code ) )
-            df = stockquery.getStockDailyData( ts_code, '20191029', '20191030' )
+            df = stockquery.getStockDailyData( ts_code, start_date, end_date )
             # 避免tushare接口调用频繁被禁
             time.sleep( 0.2 )
             #print( df )
