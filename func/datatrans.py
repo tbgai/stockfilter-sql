@@ -125,8 +125,9 @@ class DataTrans( object ):
             ts_code = stockdata.values[i,0]
             print("save {0}--{1} data".format( i, ts_code ) )
             df = stockquery.getStockDailyData( ts_code, start_date, end_date )
-            # 避免tushare接口调用频繁被禁
-            time.sleep( 0.2 )
+            # 避免tushare接口调用频繁被禁，1分钟不能超过200次 
+            # 60 / 190 = 0.32
+            time.sleep( 0.32 )
             #print( df )
             ilen = len(df.values)
             for j in range( ilen ):
